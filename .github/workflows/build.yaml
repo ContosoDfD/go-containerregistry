@@ -11,13 +11,15 @@ jobs:
 
     strategy:
       matrix:
-        go-version: [1.19, '1.20']
+        go-version: ['1.19', '1.20']
 
     steps:
       - name: kntrl agent
         run: |
-         sudo docker run --privileged --pid=host --network=host --cgroupns=host --volume=/sys/kernel/debug:/sys/kernel/debug:ro --volume /tmp:/tmp --rm docker.io/kondukto/kntrl:0.0 --mode=monitor 
+         sudo docker run -d --name=kntrl --privileged --pid=host --network=host --cgroupns=host --volume=/sys/kernel/debug:/sys/kernel/debug:ro --volume /tmp:/tmp --rm docker.io/kondukto/kntrl:0.0 --mode=monitor 
+
       - uses: actions/checkout@v3
+
       - uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
@@ -26,3 +28,6 @@ jobs:
       - run: |
           go build ./...
           go test -run=^$ ./...
+
+      - run: |
+          docker logs kntrl
